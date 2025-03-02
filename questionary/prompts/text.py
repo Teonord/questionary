@@ -1,3 +1,4 @@
+from shutil import get_terminal_size
 from typing import Any
 from typing import List
 from typing import Optional
@@ -14,6 +15,27 @@ from questionary.constants import INSTRUCTION_MULTILINE
 from questionary.prompts.common import build_validator
 from questionary.question import Question
 from questionary.styles import merge_styles_default
+
+
+def _wrap_with_newline(message: str, qmark: str, width: int):
+    wrapped_lines = []
+    ending_wrap = message.endswith("\n")
+    lines = message.split("\n")
+
+    if len(lines[0]) > width - len(qmark) - 1:
+        wrapped_lines.append(lines[0][: width - len(qmark) - 1])
+        lines[0] = lines[0][width - len(qmark) - 1 :]  # noqa: E203
+
+    for line in lines:
+        wrapped = [
+            line[i : i + width] for i in range(0, len(line), width)  # noqa: E203
+        ]
+        wrapped_lines.extend(wrapped)
+
+    if ending_wrap:
+        wrapped_lines.append("")
+
+    return "\n".join(wrapped_lines)
 
 
 def text(
@@ -81,6 +103,9 @@ def text(
 
     if instruction is None and multiline:
         instruction = INSTRUCTION_MULTILINE
+
+    if "\n" in message:
+        message = _wrap_with_newline(message, qmark, get_terminal_size().columns)
 
     def get_prompt_tokens() -> List[Tuple[str, str]]:
         result = [("class:qmark", qmark), ("class:question", " {} ".format(message))]

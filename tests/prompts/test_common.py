@@ -15,6 +15,7 @@ from questionary.prompts import common
 from questionary.prompts.common import InquirerControl
 from questionary.prompts.common import build_validator
 from questionary.prompts.common import print_formatted_text
+from questionary.prompts.text import _wrap_with_newline
 from tests.utils import prompt_toolkit_version
 
 
@@ -271,3 +272,17 @@ def test_prompt_show_description():
     ]
     assert ic.pointed_at == 1
     assert ic._get_choice_tokens() == expected_tokens
+
+
+def test_wrap_with_newline():
+    wrapped = _wrap_with_newline("1234567890123456789012345678901234567890\n", "?", 20)
+
+    assert wrapped == "123456789012345678\n90123456789012345678\n90\n"
+
+
+def test_wrap_with_many_newlines():
+    wrapped = _wrap_with_newline(
+        "1234\n56789\n0123456\n789012345678901234567890\n", "?", 20
+    )
+
+    assert wrapped == "1234\n56789\n0123456\n78901234567890123456\n7890\n"
